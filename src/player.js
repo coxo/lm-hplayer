@@ -19,8 +19,8 @@ function SinglePlayer({ type, file, h265lib, className, autoPlay, muted, poster,
   const [playerObj, setPlayerObj] = useState(null);
   const [canvsShow, setcanvsShow] = useState(false);
   const [canPlay, setcanPlay] = useState(true);
+  const [canFull, setcanFull] = useState(false);
   const DEMUX_MSG_EVENT = 'demux_msg'
-  
   let isfirst = false;
   useEffect(() => {
     if (!file) {
@@ -69,7 +69,11 @@ function SinglePlayer({ type, file, h265lib, className, autoPlay, muted, poster,
   const PlayerA = new Players(h265lib);
 
   const HplayCreater = useCallback(() => {
-    PlayerA.play(file, document.getElementById('playCanvas'), function (e) {
+    let parentEle = document.querySelector('.h265-bar');
+    let canvas = document.getElementById('playCanvas');
+    canvas.width = parentEle.offsetWidth; //parentEle.offsetWidth;
+    canvas.height = parentEle.offsetHeight;
+    PlayerA.play(file, canvas,parentEle, function (e) {
       if (e.error == 1) {
       }
     }, 512 * 1024, true);
@@ -90,11 +94,14 @@ function SinglePlayer({ type, file, h265lib, className, autoPlay, muted, poster,
     PlayerA.resume();
     setcanPlay(true)
   }, [file, canvsShow]);
-
-  const fullscreen = useCallback(() => {
-    PlayerA.fullscreen();
+  const exitfullscreen = useCallback(() => {
+    PlayerA.exitfullscreen();
+    setcanFull(false);
   }, [file, canvsShow]);
-
+  const fullscreen = useCallback(() => {
+      PlayerA.fullscreen();
+      setcanFull(true);
+  }, [file,canvsShow]);
   return (
     <>
       {
@@ -117,15 +124,18 @@ function SinglePlayer({ type, file, h265lib, className, autoPlay, muted, poster,
           />
           {children}
         </div> :
-          <div className="h265-bar" style={{ position: "relative" }}>
-            <canvas id="playCanvas" className='player-webgl' width="800" height="400"></canvas>
+          <div className="h265-bar">
+            <canvas id="playCanvas" className='player-webgl'></canvas>
             <div className={`contraller-bar-layout `}>
               {canPlay ? <IconFont title="播放" onClick={hplay} type={'lm-player-Pause_Main'} />
                 :
                 <IconFont title="播放" onClick={hstop} type={'lm-player-Play_Main'} />
               }
-              {/* <IconFont title="播放" onClick={hplayOrstop} type={ canPlay ?  'lm-player-Pause_Main' : 'lm-player-Play_Main'} /> */}
-              <IconFont title={true ? '窗口' : '全屏'} onClick={fullscreen} type={true ? 'lm-player-ExitFull_Main' : 'lm-player-Full_Main'} />
+              {
+                !canFull ? <IconFont title={'全屏'} onClick={fullscreen} type={'lm-player-ExitFull_Main'} />
+                :
+                <IconFont title={'窗口'} onClick={exitfullscreen} type={'lm-player-Full_Main'} />
+              }
             </div>
           </div>
       }

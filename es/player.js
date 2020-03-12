@@ -1885,8 +1885,37 @@ Texture.prototype.fill = function (width, height, data) {
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, width, height, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, data);
 };
 
-function WebGLPlayer(canvas, options) {
+function WebGLPlayer(canvas, parent, options) {
   this.canvas = canvas;
+  this.parent = parent;
+  this.canvasWH = {
+    "width": 0,
+    "height": 0
+  };
+  this.isFull = false;
+  document.addEventListener('webkitfullscreenchange', e => {
+    //e.currentTarget.webkitIsFullScreen  可以判断浏览器是否全屏 
+    debugger;
+
+    if (!e.currentTarget.webkitIsFullScreen && this.isFull) {
+      this.isFull = false; //浏览器退出全屏时  将标志位置为true来显示顶部导航
+    }
+  });
+  document.addEventListener('fullscreenchange', e => {
+    if (!e.currentTarget.isFullScreen && this.isFull) {
+      this.isFull = false;
+    }
+  });
+  document.addEventListener('mozfullscreenchange', e => {
+    if (!e.currentTarget.mozIsFullScreen && this.isFull) {
+      this.isFull = false;
+    }
+  });
+  document.addEventListener('MSFullscreenChange', e => {
+    if (!e.currentTarget.MSIsFullScreen && this.isFull) {
+      this.isFull = false;
+    }
+  });
   this.gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
   this.initGL(options);
 }
@@ -1900,7 +1929,7 @@ WebGLPlayer.prototype.initGL = function (options) {
   var gl = this.gl;
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
   var program = gl.createProgram();
-  var vertexShaderSource = ["attribute highp vec4 aVertexPosition;", "attribute vec2 aTextureCoord;", "varying highp vec2 vTextureCoord;", "void main(void) {", " gl_Position = aVertexPosition;", " vTextureCoord = aTextureCoord;", "}"].join("\n");
+  var vertexShaderSource = ["attribute highp vec4 aVertexPosition;", "uniform float px;", "uniform float py;", "attribute vec2 aTextureCoord;", "varying highp vec2 vTextureCoord;", "uniform vec2 u_scale;", "void main(void) {", " gl_Position.x = aVertexPosition.x*px;", " gl_Position.y = aVertexPosition.y*py;", " gl_Position.z = 1.0;", " gl_Position.w = 1.0;", " vTextureCoord = aTextureCoord;", "}"].join("\n");
   var vertexShader = gl.createShader(gl.VERTEX_SHADER);
   gl.shaderSource(vertexShader, vertexShaderSource);
   gl.compileShader(vertexShader);
@@ -1935,6 +1964,11 @@ WebGLPlayer.prototype.initGL = function (options) {
   gl.y.bind(0, program, "YTexture");
   gl.u.bind(1, program, "UTexture");
   gl.v.bind(2, program, "VTexture");
+  var px = 1;
+  var pxLocation = gl.getUniformLocation(program, 'px');
+  gl.uniform1f(pxLocation, px);
+  var pyLocation = gl.getUniformLocation(program, 'py');
+  gl.uniform1f(pyLocation, px);
 };
 
 WebGLPlayer.prototype.renderFrame = function (videoFrame, width, height, uOffset, vOffset) {
@@ -1944,32 +1978,54 @@ WebGLPlayer.prototype.renderFrame = function (videoFrame, width, height, uOffset
   }
 
   var gl = this.gl;
+
+  if (this.canvasWH.width && this.canvasWH.height) {
+    if (!this.isFull) {
+      gl.canvas.width = this.canvasWH.width;
+      gl.canvas.height = this.canvasWH.height;
+    } else {
+      gl.canvas.width = window.screen.width;
+      gl.canvas.height = window.screen.height;
+    }
+  }
+
+  if (!this.canvasWH.width && !this.canvasWH.height) {
+    this.canvasWH.width = gl.canvas.width;
+    this.canvasWH.height = gl.canvas.height;
+  } // console.log(gl.canvas.width, gl.canvas.height,this.canvas.width, this.canvas.height,"++++++++++++++++++++++");
+
+
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   gl.clearColor(0.0, 0.0, 0.0, 0.0);
   gl.clear(gl.COLOR_BUFFER_BIT);
   gl.y.fill(width, height, videoFrame.subarray(0, uOffset));
   gl.u.fill(width >> 1, height >> 1, videoFrame.subarray(uOffset, uOffset + vOffset));
-  gl.v.fill(width >> 1, height >> 1, videoFrame.subarray(uOffset + vOffset, videoFrame.length));
+  gl.v.fill(width >> 1, height >> 1, videoFrame.subarray(uOffset + vOffset, videoFrame.length)); // var modelMatrix = new Matrix4();
+  // modelMatrix.scale(curScale, curScale, curScale);
+
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 };
 
 WebGLPlayer.prototype.fullscreen = function () {
-  var canvas = this.canvas;
+  var parent = this.parent;
+  this.isFull = true;
 
-  if (canvas.RequestFullScreen) {
-    canvas.RequestFullScreen();
-  } else if (canvas.webkitRequestFullScreen) {
-    canvas.webkitRequestFullScreen();
-  } else if (canvas.mozRequestFullScreen) {
-    canvas.mozRequestFullScreen();
-  } else if (canvas.msRequestFullscreen) {
-    canvas.msRequestFullscreen();
+  if (parent.RequestFullScreen) {
+    parent.RequestFullScreen();
+  } else if (parent.webkitRequestFullScreen) {
+    parent.webkitRequestFullScreen();
+  } else if (parent.mozRequestFullScreen) {
+    parent.mozRequestFullScreen();
+  } else if (parent.msRequestFullscreen) {
+    parent.msRequestFullscreen();
   } else {
     alert("This browser doesn't supporter fullscreen");
   }
 };
 
 WebGLPlayer.prototype.exitfullscreen = function () {
+  this.isFull = false;
+
   if (document.exitFullscreen) {
     document.exitFullscreen();
   } else if (document.webkitExitFullscreen) {
@@ -2067,7 +2123,8 @@ Player.prototype.initDownloadWorker = function () {
 };
 
 Player.prototype.initDecodeWorker = function () {
-  var self = this;
+  var self = this; // console.log("+====+++++++++++++",this.decoderAddress)
+
   this.decodeWorker = new Worker(this.decoderAddress);
 
   this.decodeWorker.onmessage = function (evt) {
@@ -2105,7 +2162,7 @@ Player.prototype.initDecodeWorker = function () {
   };
 };
 
-Player.prototype.play = function (url, canvas, callback, waitHeaderLength, isStream) {
+Player.prototype.play = function (url, canvas, parent, callback, waitHeaderLength, isStream) {
   //  this.logger.logInfo("Play " + url + ".");
   var ret = {
     e: 0,
@@ -2173,7 +2230,7 @@ Player.prototype.play = function (url, canvas, callback, waitHeaderLength, isStr
     this.startTrackTimer();
     this.displayLoop(); //var playCanvasContext = playCanvas.getContext("2d"); //If get 2d, webgl will be disabled.
 
-    this.webglPlayer = new WebGLPlayer(this.canvas, {
+    this.webglPlayer = new WebGLPlayer(this.canvas, parent, {
       preserveDrawingBuffer: false
     });
 
@@ -2413,6 +2470,12 @@ Player.prototype.seekTo = function (ms) {
 Player.prototype.fullscreen = function () {
   if (this.webglPlayer) {
     this.webglPlayer.fullscreen();
+  }
+};
+
+Player.prototype.exitfullscreen = function () {
+  if (this.webglPlayer) {
+    this.webglPlayer.exitfullscreen();
   }
 };
 
@@ -3117,6 +3180,7 @@ function SinglePlayer({
   const [playerObj, setPlayerObj] = useState(null);
   const [canvsShow, setcanvsShow] = useState(false);
   const [canPlay, setcanPlay] = useState(true);
+  const [canFull, setcanFull] = useState(false);
   const DEMUX_MSG_EVENT = 'demux_msg';
   let isfirst = false;
   useEffect(() => {
@@ -3166,7 +3230,12 @@ function SinglePlayer({
   }, [file]);
   const PlayerA = new Player(h265lib);
   const HplayCreater = useCallback(() => {
-    PlayerA.play(file, document.getElementById('playCanvas'), function (e) {
+    let parentEle = document.querySelector('.h265-bar');
+    let canvas = document.getElementById('playCanvas');
+    canvas.width = parentEle.offsetWidth; //parentEle.offsetWidth;
+
+    canvas.height = parentEle.offsetHeight;
+    PlayerA.play(file, canvas, parentEle, function (e) {
       if (e.error == 1) ;
     }, 512 * 1024, true);
   }, [canvsShow]);
@@ -3183,8 +3252,13 @@ function SinglePlayer({
     PlayerA.resume();
     setcanPlay(true);
   }, [file, canvsShow]);
+  const exitfullscreen = useCallback(() => {
+    PlayerA.exitfullscreen();
+    setcanFull(false);
+  }, [file, canvsShow]);
   const fullscreen = useCallback(() => {
     PlayerA.fullscreen();
+    setcanFull(true);
   }, [file, canvsShow]);
   return React.createElement(React.Fragment, null, !canvsShow ? React.createElement("div", {
     className: `lm-player-container ${className}`,
@@ -3212,14 +3286,10 @@ function SinglePlayer({
     rightMidExtContents: props.rightMidExtContents,
     draggable: props.draggable
   }), children) : React.createElement("div", {
-    className: "h265-bar",
-    style: {
-      position: "relative"
-    }
+    className: "h265-bar"
   }, React.createElement("canvas", {
     id: "playCanvas",
-    width: "800",
-    height: "400"
+    className: "player-webgl"
   }), React.createElement("div", {
     className: `contraller-bar-layout `
   }, canPlay ? React.createElement(IconFont, {
@@ -3230,10 +3300,14 @@ function SinglePlayer({
     title: "\u64AD\u653E",
     onClick: hstop,
     type: 'lm-player-Play_Main'
-  }), React.createElement(IconFont, {
-    title:  '窗口' ,
+  }), !canFull ? React.createElement(IconFont, {
+    title: '全屏',
     onClick: fullscreen,
-    type:  'lm-player-ExitFull_Main' 
+    type: 'lm-player-ExitFull_Main'
+  }) : React.createElement(IconFont, {
+    title: '窗口',
+    onClick: exitfullscreen,
+    type: 'lm-player-Full_Main'
   }))));
 }
 

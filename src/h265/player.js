@@ -1,74 +1,74 @@
 //Decoder states.
-const decoderStateIdle          = 0;
-const decoderStateInitializing  = 1;
-const decoderStateReady         = 2;
-const decoderStateFinished      = 3;
+const decoderStateIdle = 0;
+const decoderStateInitializing = 1;
+const decoderStateReady = 2;
+const decoderStateFinished = 3;
 
 //Player states.
-const playerStateIdle           = 0;
-const playerStatePlaying        = 1;
-const playerStatePausing        = 2;
+const playerStateIdle = 0;
+const playerStatePlaying = 1;
+const playerStatePausing = 2;
 
 //Constant.
-const maxBufferTimeLength       = 1.0;
+const maxBufferTimeLength = 1.0;
 const downloadSpeedByteRateCoef = 2.0;
 
 
 /* -------------------------------------------------- */
 //Player request.
-const kPlayVideoReq         = 0;
-const kPauseVideoReq        = 1;
-const kStopVideoReq         = 2;
+const kPlayVideoReq = 0;
+const kPauseVideoReq = 1;
+const kStopVideoReq = 2;
 
 //Player response.
-const kPlayVideoRsp         = 0;
-const kAudioInfo            = 1;
-const kVideoInfo            = 2;
-const kAudioData            = 3;
-const kVideoData            = 4;
+const kPlayVideoRsp = 0;
+const kAudioInfo = 1;
+const kVideoInfo = 2;
+const kAudioData = 3;
+const kVideoData = 4;
 
 //Downloader request.
-const kGetFileInfoReq       = 0;
-const kDownloadFileReq      = 1;
-const kCloseDownloaderReq   = 2;
+const kGetFileInfoReq = 0;
+const kDownloadFileReq = 1;
+const kCloseDownloaderReq = 2;
 
 //Downloader response.
-const kGetFileInfoRsp       = 0;
-const kFileData             = 1;
+const kGetFileInfoRsp = 0;
+const kFileData = 1;
 
 //Downloader Protocol.
-const kProtoHttp            = 0;
-const kProtoWebsocket       = 1;
+const kProtoHttp = 0;
+const kProtoWebsocket = 1;
 
 //Decoder request.
-const kInitDecoderReq       = 0;
-const kUninitDecoderReq     = 1;
-const kOpenDecoderReq       = 2;
-const kCloseDecoderReq      = 3;
-const kFeedDataReq          = 4;
-const kStartDecodingReq     = 5;
-const kPauseDecodingReq     = 6;
-const kSeekToReq            = 7;
+const kInitDecoderReq = 0;
+const kUninitDecoderReq = 1;
+const kOpenDecoderReq = 2;
+const kCloseDecoderReq = 3;
+const kFeedDataReq = 4;
+const kStartDecodingReq = 5;
+const kPauseDecodingReq = 6;
+const kSeekToReq = 7;
 
 //Decoder response.
-const kInitDecoderRsp       = 0;
-const kUninitDecoderRsp     = 1;
-const kOpenDecoderRsp       = 2;
-const kCloseDecoderRsp      = 3;
-const kVideoFrame           = 4;
-const kAudioFrame           = 5;
-const kStartDecodingRsp     = 6;
-const kPauseDecodingRsp     = 7;
-const kDecodeFinishedEvt    = 8;
-const kRequestDataEvt       = 9;
-const kSeekToRsp            = 10;
+const kInitDecoderRsp = 0;
+const kUninitDecoderRsp = 1;
+const kOpenDecoderRsp = 2;
+const kCloseDecoderRsp = 3;
+const kVideoFrame = 4;
+const kAudioFrame = 5;
+const kStartDecodingRsp = 6;
+const kPauseDecodingRsp = 7;
+const kDecodeFinishedEvt = 8;
+const kRequestDataEvt = 9;
+const kSeekToRsp = 10;
 
 
 function PCMPlayer(option) {
     this.init(option);
 }
 
-PCMPlayer.prototype.init = function(option) {
+PCMPlayer.prototype.init = function (option) {
     var defaults = {
         encoding: '16bitInt',
         channels: 1,
@@ -106,7 +106,7 @@ PCMPlayer.prototype.getTypedArray = function () {
     return typedArrays[this.option.encoding] ? typedArrays[this.option.encoding] : typedArrays['16bitInt'];
 };
 
-PCMPlayer.prototype.createContext = function() {
+PCMPlayer.prototype.createContext = function () {
     this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     this.gainNode = this.audioCtx.createGain();
     this.gainNode.gain.value = 1;
@@ -114,11 +114,11 @@ PCMPlayer.prototype.createContext = function() {
     this.startTime = this.audioCtx.currentTime;
 };
 
-PCMPlayer.prototype.isTypedArray = function(data) {
+PCMPlayer.prototype.isTypedArray = function (data) {
     return (data.byteLength && data.buffer && data.buffer.constructor == ArrayBuffer);
 };
 
-PCMPlayer.prototype.feed = function(data) {
+PCMPlayer.prototype.feed = function (data) {
     if (!this.isTypedArray(data)) return;
     data = this.getFormatedValue(data);
     var tmp = new Float32Array(this.samples.length + data.length);
@@ -127,7 +127,7 @@ PCMPlayer.prototype.feed = function(data) {
     this.samples = tmp;
 };
 
-PCMPlayer.prototype.getFormatedValue = function(data) {
+PCMPlayer.prototype.getFormatedValue = function (data) {
     var data = new this.typedArray(data.buffer),
         float32 = new Float32Array(data.length),
         i;
@@ -138,11 +138,11 @@ PCMPlayer.prototype.getFormatedValue = function(data) {
     return float32;
 };
 
-PCMPlayer.prototype.volume = function(volume) {
+PCMPlayer.prototype.volume = function (volume) {
     this.gainNode.gain.value = volume;
 };
 
-PCMPlayer.prototype.destroy = function() {
+PCMPlayer.prototype.destroy = function () {
     if (this.interval) {
         clearInterval(this.interval);
     }
@@ -151,7 +151,7 @@ PCMPlayer.prototype.destroy = function() {
     this.audioCtx = null;
 };
 
-PCMPlayer.prototype.flush = function() {
+PCMPlayer.prototype.flush = function () {
     if (!this.samples.length) return;
     var bufferSource = this.audioCtx.createBufferSource(),
         length = this.samples.length / this.option.channels,
@@ -170,16 +170,16 @@ PCMPlayer.prototype.flush = function() {
             audioData[i] = this.samples[offset];
             /* fadein */
             if (i < 50) {
-                audioData[i] =  (audioData[i] * i) / 50;
+                audioData[i] = (audioData[i] * i) / 50;
             }
             /* fadeout*/
             if (i >= (length - 51)) {
-                audioData[i] =  (audioData[i] * decrement--) / 50;
+                audioData[i] = (audioData[i] * decrement--) / 50;
             }
             offset += this.option.channels;
         }
     }
-    
+
     if (this.startTime < this.audioCtx.currentTime) {
         this.startTime = this.audioCtx.currentTime;
     }
@@ -288,8 +288,47 @@ Texture.prototype.fill = function (width, height, data) {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, width, height, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, data);
 };
 
-function WebGLPlayer(canvas, options) {
+function WebGLPlayer(canvas, parent, options) {
     this.canvas = canvas;
+    this.parent = parent;
+    this.canvasWH = {
+        "width": 0,
+        "height": 0
+    };
+    this.isFull = false;
+    document.addEventListener('webkitfullscreenchange', (e) => {
+        //e.currentTarget.webkitIsFullScreen  可以判断浏览器是否全屏 
+        debugger
+        if (!(e.currentTarget.webkitIsFullScreen) && this.isFull) {
+            this.isFull = false;
+            //浏览器退出全屏时  将标志位置为true来显示顶部导航
+        } else {
+
+        }
+    });
+    document.addEventListener('fullscreenchange', (e) => {
+        if (!(e.currentTarget.isFullScreen) && this.isFull) {
+            this.isFull = false;
+        } else {
+
+        }
+    });
+    /!* 火狐 *!/
+    document.addEventListener('mozfullscreenchange', (e) => {
+        if (!(e.currentTarget.mozIsFullScreen) && this.isFull) {
+            this.isFull = false;
+        } else {
+
+        }
+    });
+    /!* IE *!/
+    document.addEventListener('MSFullscreenChange', (e) => {
+        if (!(e.currentTarget.MSIsFullScreen) && this.isFull) {
+            this.isFull = false;
+        } else {
+
+        }
+    });
     this.gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
     this.initGL(options);
 }
@@ -305,10 +344,16 @@ WebGLPlayer.prototype.initGL = function (options) {
     var program = gl.createProgram();
     var vertexShaderSource = [
         "attribute highp vec4 aVertexPosition;",
+        "uniform float px;",
+        "uniform float py;",
         "attribute vec2 aTextureCoord;",
         "varying highp vec2 vTextureCoord;",
+        "uniform vec2 u_scale;",
         "void main(void) {",
-        " gl_Position = aVertexPosition;",
+        " gl_Position.x = aVertexPosition.x*px;",
+        " gl_Position.y = aVertexPosition.y*py;",
+        " gl_Position.z = 1.0;",
+        " gl_Position.w = 1.0;",
         " vTextureCoord = aTextureCoord;",
         "}"
     ].join("\n");
@@ -363,6 +408,12 @@ WebGLPlayer.prototype.initGL = function (options) {
     gl.y.bind(0, program, "YTexture");
     gl.u.bind(1, program, "UTexture");
     gl.v.bind(2, program, "VTexture");
+    var px = 1;
+    var pxLocation = gl.getUniformLocation(program, 'px');
+    gl.uniform1f(pxLocation, px);
+    var py = 1;
+    var pyLocation = gl.getUniformLocation(program, 'py');
+    gl.uniform1f(pyLocation, px);
 }
 
 WebGLPlayer.prototype.renderFrame = function (videoFrame, width, height, uOffset, vOffset) {
@@ -370,8 +421,22 @@ WebGLPlayer.prototype.renderFrame = function (videoFrame, width, height, uOffset
         console.log("[ER] Render frame failed due to WebGL not supported.");
         return;
     }
-
     var gl = this.gl;
+    if (this.canvasWH.width && this.canvasWH.height) {
+        if (!this.isFull) {
+            gl.canvas.width = this.canvasWH.width;
+            gl.canvas.height = this.canvasWH.height;
+        } else {
+            gl.canvas.width = window.screen.width;
+            gl.canvas.height = window.screen.height;
+        }
+
+    }
+    if (!this.canvasWH.width && !this.canvasWH.height) {
+        this.canvasWH.width = gl.canvas.width;
+        this.canvasWH.height = gl.canvas.height;
+    }
+    // console.log(gl.canvas.width, gl.canvas.height,this.canvas.width, this.canvas.height,"++++++++++++++++++++++");
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -380,25 +445,32 @@ WebGLPlayer.prototype.renderFrame = function (videoFrame, width, height, uOffset
     gl.u.fill(width >> 1, height >> 1, videoFrame.subarray(uOffset, uOffset + vOffset));
     gl.v.fill(width >> 1, height >> 1, videoFrame.subarray(uOffset + vOffset, videoFrame.length));
 
+
+    // var modelMatrix = new Matrix4();
+    // modelMatrix.scale(curScale, curScale, curScale);
+
+
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 };
 
 WebGLPlayer.prototype.fullscreen = function () {
-	  var canvas = this.canvas;
-    if (canvas.RequestFullScreen) {
-        canvas.RequestFullScreen();
-    } else if (canvas.webkitRequestFullScreen) {
-        canvas.webkitRequestFullScreen();
-    } else if (canvas.mozRequestFullScreen) {
-        canvas.mozRequestFullScreen();
-    } else if (canvas.msRequestFullscreen) {
-        canvas.msRequestFullscreen();
+    var parent = this.parent;
+    this.isFull = true;
+    if (parent.RequestFullScreen) {
+        parent.RequestFullScreen();
+    } else if (parent.webkitRequestFullScreen) {
+        parent.webkitRequestFullScreen();
+    } else if (parent.mozRequestFullScreen) {
+        parent.mozRequestFullScreen();
+    } else if (parent.msRequestFullscreen) {
+        parent.msRequestFullscreen();
     } else {
         alert("This browser doesn't supporter fullscreen");
     }
 };
 
-WebGLPlayer.prototype.exitfullscreen = function (){
+WebGLPlayer.prototype.exitfullscreen = function () {
+    this.isFull = false;
     if (document.exitFullscreen) {
         document.exitFullscreen();
     } else if (document.webkitExitFullscreen) {
@@ -416,7 +488,7 @@ WebGLPlayer.prototype.exitfullscreen = function (){
 
 
 
-String.prototype.startWith = function(str) {
+String.prototype.startWith = function (str) {
     var reg = new RegExp("^" + str);
     return reg.test(this);
 };
@@ -429,48 +501,48 @@ function FileInfo(url) {
 }
 
 function Player(h265lib) {
-    this.fileInfo           = null;
-    this.pcmPlayer          = null;
-    this.canvas             = null;
-    this.webglPlayer        = null;
-    this.callback           = null;
-    this.waitHeaderLength   = 524288;
-    this.duration           = 0;
-    this.pixFmt             = 0;
-    this.videoWidth         = 0;
-    this.videoHeight        = 0;
-    this.yLength            = 0;
-    this.uvLength           = 0;
-    this.beginTimeOffset    = 0;
-    this.decoderState       = decoderStateIdle;
-    this.playerState        = playerStateIdle;
-    this.decoding           = false;
-    this.decodeInterval     = 5;
+    this.fileInfo = null;
+    this.pcmPlayer = null;
+    this.canvas = null;
+    this.webglPlayer = null;
+    this.callback = null;
+    this.waitHeaderLength = 524288;
+    this.duration = 0;
+    this.pixFmt = 0;
+    this.videoWidth = 0;
+    this.videoHeight = 0;
+    this.yLength = 0;
+    this.uvLength = 0;
+    this.beginTimeOffset = 0;
+    this.decoderState = decoderStateIdle;
+    this.playerState = playerStateIdle;
+    this.decoding = false;
+    this.decodeInterval = 5;
     this.videoRendererTimer = null;
-    this.downloadTimer      = null;
-    this.chunkInterval      = 200;
-    this.downloadSeqNo      = 0;
-    this.downloading        = false;
-    this.downloadProto      = kProtoHttp;
-    this.timeLabel          = null;
-    this.timeTrack          = null;
-    this.trackTimer         = null;
+    this.downloadTimer = null;
+    this.chunkInterval = 200;
+    this.downloadSeqNo = 0;
+    this.downloading = false;
+    this.downloadProto = kProtoHttp;
+    this.timeLabel = null;
+    this.timeTrack = null;
+    this.trackTimer = null;
     this.trackTimerInterval = 500;
-    this.displayDuration    = "00:00:00";
-    this.audioEncoding      = "";
-    this.audioChannels      = 0;
-    this.audioSampleRate    = 0;
-    this.seeking            = false;  // Flag to preventing multi seek from track.
-    this.justSeeked         = false;  // Flag to preventing multi seek from ffmpeg.
-    this.urgent             = false;
-    this.loadingDiv         = null;
-    this.buffering          = false;
-    this.frameBuffer        = [];
-    this.isStream           = false;
-    this.streamReceivedlen  = 0;
-    this.firstAudioFrame    = true;
-    this.fetchController    = null;
-    this.streamPauseParam   = null;
+    this.displayDuration = "00:00:00";
+    this.audioEncoding = "";
+    this.audioChannels = 0;
+    this.audioSampleRate = 0;
+    this.seeking = false;  // Flag to preventing multi seek from track.
+    this.justSeeked = false;  // Flag to preventing multi seek from ffmpeg.
+    this.urgent = false;
+    this.loadingDiv = null;
+    this.buffering = false;
+    this.frameBuffer = [];
+    this.isStream = false;
+    this.streamReceivedlen = 0;
+    this.firstAudioFrame = true;
+    this.fetchController = null;
+    this.streamPauseParam = null;
     this.downloaderAddress = h265lib + '/downloader.js';
     this.decoderAddress  = h265lib + '/decoder.js'
     // this.logger             = new Logger("Player");
@@ -480,6 +552,7 @@ function Player(h265lib) {
 
 Player.prototype.initDownloadWorker = function () {
     var self = this;
+
     this.downloadWorker = new Worker(this.downloaderAddress);
     this.downloadWorker.onmessage = function (evt) {
         var objData = evt.data;
@@ -496,6 +569,8 @@ Player.prototype.initDownloadWorker = function () {
 
 Player.prototype.initDecodeWorker = function () {
     var self = this;
+    // console.log("+====+++++++++++++",this.decoderAddress)
+
     this.decodeWorker = new Worker(this.decoderAddress);
     this.decodeWorker.onmessage = function (evt) {
         var objData = evt.data;
@@ -525,8 +600,8 @@ Player.prototype.initDecodeWorker = function () {
     }
 };
 
-Player.prototype.play = function (url, canvas, callback, waitHeaderLength, isStream) {
-  //  this.logger.logInfo("Play " + url + ".");
+Player.prototype.play = function (url, canvas, parent, callback, waitHeaderLength, isStream) {
+    //  this.logger.logInfo("Play " + url + ".");
 
     var ret = {
         e: 0,
@@ -550,7 +625,7 @@ Player.prototype.play = function (url, canvas, callback, waitHeaderLength, isStr
                 m: "Invalid url"
             };
             success = false;
-         //   this.logger.logError("[ER] playVideo error, url empty.");
+            //   this.logger.logError("[ER] playVideo error, url empty.");
             break;
         }
 
@@ -560,7 +635,7 @@ Player.prototype.play = function (url, canvas, callback, waitHeaderLength, isStr
                 m: "Canvas not set"
             };
             success = false;
-           // this.logger.logError("[ER] playVideo error, canvas empty.");
+            // this.logger.logError("[ER] playVideo error, canvas empty.");
             break;
         }
 
@@ -570,7 +645,7 @@ Player.prototype.play = function (url, canvas, callback, waitHeaderLength, isStr
                 m: "Downloader not initialized"
             };
             success = false;
-           // this.logger.logError("[ER] Downloader not initialized.");
+            // this.logger.logError("[ER] Downloader not initialized.");
             break
         }
 
@@ -580,7 +655,7 @@ Player.prototype.play = function (url, canvas, callback, waitHeaderLength, isStr
                 m: "Decoder not initialized"
             };
             success = false;
-         //   this.logger.logError("[ER] Decoder not initialized.");
+            //   this.logger.logError("[ER] Decoder not initialized.");
             break
         }
 
@@ -600,7 +675,7 @@ Player.prototype.play = function (url, canvas, callback, waitHeaderLength, isStr
         this.displayLoop();
 
         //var playCanvasContext = playCanvas.getContext("2d"); //If get 2d, webgl will be disabled.
-        this.webglPlayer = new WebGLPlayer(this.canvas, {
+        this.webglPlayer = new WebGLPlayer(this.canvas, parent, {
             preserveDrawingBuffer: false
         });
 
@@ -620,7 +695,7 @@ Player.prototype.play = function (url, canvas, callback, waitHeaderLength, isStr
         }
 
         var self = this;
-        this.registerVisibilityEvent(function(visible) {
+        this.registerVisibilityEvent(function (visible) {
             if (visible) {
                 self.resume();
             } else {
@@ -651,7 +726,7 @@ Player.prototype.pauseStream = function () {
         waitHeaderLength: this.waitHeaderLength
     }
 
-   // this.logger.logInfo("Stop in stream pause.");
+    // this.logger.logInfo("Stop in stream pause.");
     this.stop();
 
     var ret = {
@@ -667,7 +742,7 @@ Player.prototype.pause = function () {
         return this.pauseStream();
     }
 
-   // this.logger.logInfo("Pause.");
+    // this.logger.logInfo("Pause.");
 
     if (this.playerState != playerStatePlaying) {
         var ret = {
@@ -709,12 +784,12 @@ Player.prototype.resumeStream = function () {
         return ret;
     }
 
-   // this.logger.logInfo("Play in stream resume.");
+    // this.logger.logInfo("Play in stream resume.");
     this.play(this.streamPauseParam.url,
-              this.streamPauseParam.canvas,
-              this.streamPauseParam.callback,
-              this.streamPauseParam.waitHeaderLength,
-              true);
+        this.streamPauseParam.canvas,
+        this.streamPauseParam.callback,
+        this.streamPauseParam.waitHeaderLength,
+        true);
     this.streamPauseParam = null;
 
     var ret = {
@@ -730,7 +805,7 @@ Player.prototype.resume = function (fromSeek) {
         return this.resumeStream();
     }
 
-   // this.logger.logInfo("Resume.");
+    // this.logger.logInfo("Resume.");
 
     if (this.playerState != playerStatePausing) {
         var ret = {
@@ -770,7 +845,7 @@ Player.prototype.resume = function (fromSeek) {
 };
 
 Player.prototype.stop = function () {
-//    this.logger.logInfo("Stop.");
+    //    this.logger.logInfo("Stop.");
     if (this.playerState == playerStateIdle) {
         var ret = {
             e: -1,
@@ -782,48 +857,48 @@ Player.prototype.stop = function () {
     if (this.videoRendererTimer != null) {
         clearTimeout(this.videoRendererTimer);
         this.videoRendererTimer = null;
-     //   this.logger.logInfo("Video renderer timer stopped.");
+        //   this.logger.logInfo("Video renderer timer stopped.");
     }
 
     this.stopDownloadTimer();
     this.stopTrackTimer();
 
-    this.fileInfo           = null;
-    this.canvas             = null;
-    this.webglPlayer        = null;
-    this.callback           = null;
-    this.duration           = 0;
-    this.pixFmt             = 0;
-    this.videoWidth         = 0;
-    this.videoHeight        = 0;
-    this.yLength            = 0;
-    this.uvLength           = 0;
-    this.beginTimeOffset    = 0;
-    this.decoderState       = decoderStateIdle;
-    this.playerState        = playerStateIdle;
-    this.decoding           = false;
-    this.frameBuffer        = [];
-    this.buffering          = false;
-    this.streamReceivedlen  = 0;
-    this.firstAudioFrame    = true;
+    this.fileInfo = null;
+    this.canvas = null;
+    this.webglPlayer = null;
+    this.callback = null;
+    this.duration = 0;
+    this.pixFmt = 0;
+    this.videoWidth = 0;
+    this.videoHeight = 0;
+    this.yLength = 0;
+    this.uvLength = 0;
+    this.beginTimeOffset = 0;
+    this.decoderState = decoderStateIdle;
+    this.playerState = playerStateIdle;
+    this.decoding = false;
+    this.frameBuffer = [];
+    this.buffering = false;
+    this.streamReceivedlen = 0;
+    this.firstAudioFrame = true;
 
     if (this.pcmPlayer) {
         this.pcmPlayer.destroy();
         this.pcmPlayer = null;
-  //      this.logger.logInfo("Pcm player released.");
+        //      this.logger.logInfo("Pcm player released.");
     }
 
     if (this.timeTrack) {
         this.timeTrack.value = 0;
     }
 
- //   this.logger.logInfo("Closing decoder.");
+    //   this.logger.logInfo("Closing decoder.");
     this.decodeWorker.postMessage({
         t: kCloseDecoderReq
     });
 
 
-  //  this.logger.logInfo("Uniniting decoder.");
+    //  this.logger.logInfo("Uniniting decoder.");
     this.decodeWorker.postMessage({
         t: kUninitDecoderReq
     });
@@ -836,7 +911,7 @@ Player.prototype.stop = function () {
     return ret;
 };
 
-Player.prototype.seekTo = function(ms) {
+Player.prototype.seekTo = function (ms) {
     if (this.isStream) {
         return;
     }
@@ -858,7 +933,7 @@ Player.prototype.seekTo = function(ms) {
 
     // Reset begin time offset.
     this.beginTimeOffset = ms / 1000;
-  //  this.logger.logInfo("seekTo beginTimeOffset " + this.beginTimeOffset);
+    //  this.logger.logInfo("seekTo beginTimeOffset " + this.beginTimeOffset);
 
     this.seeking = true;
     this.justSeeked = true;
@@ -868,6 +943,11 @@ Player.prototype.seekTo = function(ms) {
 Player.prototype.fullscreen = function () {
     if (this.webglPlayer) {
         this.webglPlayer.fullscreen();
+    }
+};
+Player.prototype.exitfullscreen = function () {
+    if (this.webglPlayer) {
+        this.webglPlayer.exitfullscreen();
     }
 };
 
@@ -899,10 +979,10 @@ Player.prototype.onGetFileInfo = function (info) {
         return;
     }
 
-  //  this.logger.logInfo("Got file size rsp:" + info.st + " size:" + info.sz + " byte.");
+    //  this.logger.logInfo("Got file size rsp:" + info.st + " size:" + info.sz + " byte.");
     if (info.st == 200) {
         this.fileInfo.size = info.sz;
-    //    this.logger.logInfo("Initializing decoder.");
+        //    this.logger.logInfo("Initializing decoder.");
         var req = {
             t: kInitDecoderReq,
             s: this.fileInfo.size,
@@ -966,7 +1046,7 @@ Player.prototype.onFileData = function (data, start, end, seq) {
 
 Player.prototype.onFileDataUnderDecoderIdle = function () {
     if (this.fileInfo.offset >= this.waitHeaderLength) {
-    //    this.logger.logInfo("Opening decoder.");
+        //    this.logger.logInfo("Opening decoder.");
         this.decoderState = decoderStateInitializing;
         var req = {
             t: kOpenDecoderReq
@@ -990,7 +1070,7 @@ Player.prototype.onInitDecoder = function (objData) {
         return;
     }
 
-  //  this.logger.logInfo("Init decoder response " + objData.e + ".");
+    //  this.logger.logInfo("Init decoder response " + objData.e + ".");
     if (objData.e == 0) {
         if (!this.isStream) {
             this.downloadOneChunk();
@@ -1005,12 +1085,12 @@ Player.prototype.onOpenDecoder = function (objData) {
         return;
     }
 
- //   this.logger.logInfo("Open decoder response " + objData.e + ".");
+    //   this.logger.logInfo("Open decoder response " + objData.e + ".");
     if (objData.e == 0) {
         this.onVideoParam(objData.v);
         this.onAudioParam(objData.a);
         this.decoderState = decoderStateReady;
-     //   this.logger.logInfo("Decoder ready now.");
+        //   this.logger.logInfo("Decoder ready now.");
         this.startDecoding();
     } else {
         this.reportPlayError(objData.e);
@@ -1022,7 +1102,7 @@ Player.prototype.onVideoParam = function (v) {
         return;
     }
 
- //   this.logger.logInfo("Video param duation:" + v.d + " pixFmt:" + v.p + " width:" + v.w + " height:" + v.h + ".");
+    //   this.logger.logInfo("Video param duation:" + v.d + " pixFmt:" + v.p + " width:" + v.w + " height:" + v.h + ".");
     this.duration = v.d;
     this.pixFmt = v.p;
     //this.canvas.width = v.w;
@@ -1055,7 +1135,7 @@ Player.prototype.onVideoParam = function (v) {
         this.startDownloadTimer();
     }
 
- //   this.logger.logInfo("Byte rate:" + byteRate + " target speed:" + targetSpeed + " chunk interval:" + this.chunkInterval + ".");
+    //   this.logger.logInfo("Byte rate:" + byteRate + " target speed:" + targetSpeed + " chunk interval:" + this.chunkInterval + ".");
 };
 
 Player.prototype.onAudioParam = function (a) {
@@ -1063,7 +1143,7 @@ Player.prototype.onAudioParam = function (a) {
         return;
     }
 
-  //  this.logger.logInfo("Audio param sampleFmt:" + a.f + " channels:" + a.c + " sampleRate:" + a.r + ".");
+    //  this.logger.logInfo("Audio param sampleFmt:" + a.f + " channels:" + a.c + " sampleRate:" + a.r + ".");
 
     var sampleFmt = a.f;
     var channels = a.c;
@@ -1084,9 +1164,9 @@ Player.prototype.onAudioParam = function (a) {
             encoding = "32bitFloat";
             break;
         default:
-         //   this.logger.logError("Unsupported audio sampleFmt " + sampleFmt + "!");
+        //   this.logger.logError("Unsupported audio sampleFmt " + sampleFmt + "!");
     }
-  //  this.logger.logInfo("Audio encoding " + encoding + ".");
+    //  this.logger.logInfo("Audio encoding " + encoding + ".");
 
     this.pcmPlayer = new PCMPlayer({
         encoding: encoding,
@@ -1095,9 +1175,9 @@ Player.prototype.onAudioParam = function (a) {
         flushingTime: 5000
     });
 
-    this.audioEncoding      = encoding;
-    this.audioChannels      = channels;
-    this.audioSampleRate    = sampleRate;
+    this.audioEncoding = encoding;
+    this.audioChannels = channels;
+    this.audioSampleRate = sampleRate;
 };
 
 Player.prototype.restartAudio = function () {
@@ -1159,10 +1239,10 @@ Player.prototype.onAudioFrame = function (frame) {
 
 Player.prototype.onDecodeFinished = function (objData) {
     this.pauseDecoding();
-    this.decoderState   = decoderStateFinished;
+    this.decoderState = decoderStateFinished;
 };
 
-Player.prototype.getBufferTimerLength = function() {
+Player.prototype.getBufferTimerLength = function () {
     if (!this.frameBuffer || this.frameBuffer.length == 0) {
         return 0;
     }
@@ -1211,17 +1291,17 @@ Player.prototype.onSeekToRsp = function (ret) {
 
 Player.prototype.onRequestData = function (offset) {
     if (this.justSeeked) {
-      //  this.logger.logInfo("Request data " + offset);
+        //  this.logger.logInfo("Request data " + offset);
         if (offset >= 0 && offset < this.fileInfo.size) {
             this.fileInfo.offset = offset;
-        } 
+        }
         this.startDownloadTimer();
         //this.restartAudio();
         this.justSeeked = false;
     }
 };
 
-Player.prototype.displayLoop = function() {
+Player.prototype.displayLoop = function () {
     requestAnimationFrame(this.displayLoop.bind(this));
     if (this.playerState != playerStatePlaying) {
         return;
@@ -1301,7 +1381,7 @@ Player.prototype.downloadOneChunk = function () {
 
     var start = this.fileInfo.offset;
     if (start >= this.fileInfo.size) {
-      //  this.logger.logError("Reach file end.");
+        //  this.logger.logError("Reach file end.");
         this.stopDownloadTimer();
         return;
     }
@@ -1444,16 +1524,16 @@ Player.prototype.registerVisibilityEvent = function (cb) {
         window.onpageshow = window.onpagehide = window.onfocus = window.onblur = onchange;
     }
 
-    function onchange (evt) {
+    function onchange(evt) {
         var v = true;
         var h = false;
         var evtMap = {
-            focus:v,
-            focusin:v,
-            pageshow:v,
-            blur:h,
-            focusout:h,
-            pagehide:h
+            focus: v,
+            focusin: v,
+            pageshow: v,
+            blur: h,
+            focusout: h,
+            pagehide: h
         };
 
         evt = evt || window.event;
@@ -1467,14 +1547,14 @@ Player.prototype.registerVisibilityEvent = function (cb) {
     }
 
     // set the initial state (but only if browser supports the Page Visibility API)
-    if( document[hidden] !== undefined ) {
-        onchange({type: document[hidden] ? "blur" : "focus"});
+    if (document[hidden] !== undefined) {
+        onchange({ type: document[hidden] ? "blur" : "focus" });
     }
 }
 
 Player.prototype.onStreamDataUnderDecoderIdle = function (length) {
     if (this.streamReceivedlen >= this.waitHeaderLength) {
-      //  this.logger.logInfo("Opening decoder.");
+        //  this.logger.logInfo("Opening decoder.");
         this.decoderState = decoderStateInitializing;
         var req = {
             t: kOpenDecoderReq
@@ -1490,11 +1570,11 @@ Player.prototype.requestStream = function (url) {
     this.fetchController = new AbortController();
     const signal = this.fetchController.signal;
 
-    fetch(url, {signal}).then(async function respond(response) {
+    fetch(url, { signal }).then(async function respond(response) {
         const reader = response.body.getReader();
-        reader.read().then(function processData({done, value}) {
+        reader.read().then(function processData({ done, value }) {
             if (done) {
-            //    self.logger.logInfo("Stream done.");
+                //    self.logger.logInfo("Stream done.");
                 return;
             }
 

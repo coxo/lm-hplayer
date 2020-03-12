@@ -22,7 +22,16 @@
 }
 .h265-bar{
   position: relative;
+  width: 100%;
+  height: 100%;
+  background: #000;
   canvas{
+    // height: 100%;
+    // width: 100%;
+    // margin: 0;
+    // padding: 0;
+    // display: block;
+  background: #000;
    &:hover{
      &~div{
       opacity:1
@@ -44,7 +53,8 @@
     transition: opacity 0.3s;
     >i{
       color:#fff;
-      padding-left: 5px;
+      padding-left: 10px;
+      padding-right: 10px;
     }
     &:hover{
       opacity:1
@@ -98,11 +108,4 @@
       }
     }
   }
-}
-.player-webgl{
-  display: block;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  background: #000;
 }

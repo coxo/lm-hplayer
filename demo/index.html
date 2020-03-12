@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="width:100%;height:100%">
 
 <head>
   <meta charset="UTF-8" />
@@ -24,8 +24,8 @@
   <link rel="stylesheet" href="../umd/player.css" />
 </head>
 
-<body>
-  <div id="app"></div>
+<body style="width:100%;height:100%">
+  <div id="app" style="width:100%;height:100%"></div>
   <script src="./utils.js"></script>
   <script type="text/babel">
       const app = document.getElementById("app");
@@ -45,8 +45,8 @@
         const [liveType, setLiveType] = useState("");
         const [historyType, setHistoryType] = useState("");
         return (
-          <div style={{ width: "100%", padding: 20 }}>
-            <div style={{ width: 800, margin: "0 auto 40px auto" }}>
+          <div style={{ width: "100%",height:"100%", padding: 20 }}>
+            <div style={{ width: 800,height:"50%", margin: "0 auto 40px auto" }}>
               <h2 style={{ marginBottom: 10 }}>
                 SinglePlayer适用直播 或者其他单文件播放 支持flv m3u8
               </h2>
@@ -70,7 +70,7 @@
                 <input
                   ref={liveInputRef}
                   style={{ flex: 1, height: 32 }}
-                  // value={'http://localhost:10264/demo/h265_high.mp4'}
+                  // value={'http://localhost:3000/demo/h265_high.mp4'}
                   value={'http://127.0.0.1/live.flv'}
                   type="text"
                   placeholder="请输入视频地址"
