@@ -3166,6 +3166,7 @@
   };
 
   function SinglePlayer({
+    showLoading,
     type,
     file,
     h265lib,
@@ -3288,7 +3289,8 @@
       leftMidExtContents: props.leftMidExtContents,
       rightExtContents: props.rightExtContents,
       rightMidExtContents: props.rightMidExtContents,
-      draggable: props.draggable
+      draggable: props.draggable,
+      showLoading: showLoading
     }), children) : React__default.createElement("div", {
       className: "h265-bar"
     }, React__default.createElement("canvas", {
@@ -3326,13 +3328,14 @@
     leftMidExtContents,
     rightExtContents,
     rightMidExtContents,
-    errorReloadTimer
+    errorReloadTimer,
+    showLoading
   }) {
     if (!playerObj) {
       return React__default.createElement(NoSource, null);
     }
 
-    return React__default.createElement(React__default.Fragment, null, React__default.createElement(VideoMessage, {
+    return React__default.createElement(React__default.Fragment, null, showLoading && React__default.createElement(VideoMessage, {
       api: playerObj.api,
       event: playerObj.event
     }), draggable && React__default.createElement(DragEvent, {
@@ -3603,6 +3606,7 @@
   };
 
   function HistoryPlayer({
+    showLoading,
     type,
     historyList,
     defaultTime,
@@ -3748,7 +3752,8 @@
       reloadHistory: reloadHistory,
       historyList: historyList,
       playIndex: playIndex,
-      seekTo: seekTo
+      seekTo: seekTo,
+      showLoading: showLoading
     }), children);
   }
 
@@ -3768,13 +3773,14 @@
     reloadHistory,
     historyList,
     seekTo,
-    playIndex
+    playIndex,
+    showLoading
   }) {
     if (!playerObj) {
       return React__default.createElement(NoSource, null);
     }
 
-    return React__default.createElement(React__default.Fragment, null, React__default.createElement(VideoMessage, {
+    return React__default.createElement(React__default.Fragment, null, showLoading && React__default.createElement(VideoMessage, {
       api: playerObj.api,
       event: playerObj.event
     }), draggable && React__default.createElement(DragEvent, {

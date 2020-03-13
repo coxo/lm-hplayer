@@ -36,7 +36,7 @@ const computedTimeAndIndex = (historyList, currentTime) => {
   return [index, seekTime]
 }
 
-function HistoryPlayer({ type, historyList, defaultTime, className, autoPlay, muted, poster, playsinline, loop, preload, children, onInitPlayer, ...props }) {
+function HistoryPlayer({showLoading, type, historyList, defaultTime, className, autoPlay, muted, poster, playsinline, loop, preload, children, onInitPlayer, ...props }) {
   const playContainerRef = useRef(null)
   const [playerObj, setPlayerObj] = useState(null)
   const [playStatus, setPlayStatus] = useState(() => computedTimeAndIndex(historyList, defaultTime))
@@ -152,6 +152,7 @@ function HistoryPlayer({ type, historyList, defaultTime, className, autoPlay, mu
         historyList={historyList}
         playIndex={playIndex}
         seekTo={seekTo}
+        showLoading={showLoading}
       />
       {children}
     </div>
@@ -174,14 +175,15 @@ function VideoTools({
   reloadHistory,
   historyList,
   seekTo,
-  playIndex
+  playIndex,
+  showLoading
 }) {
   if (!playerObj) {
     return <NoSource />
   }
   return (
     <>
-      <VideoMessage api={playerObj.api} event={playerObj.event} />
+     {showLoading && <VideoMessage api={playerObj.api} event={playerObj.event} />}
       {draggable && <DragEvent playContainer={playerObj.playContainer} api={playerObj.api} event={playerObj.event} />}
       {!hideContrallerBar && (
         <ContrallerEvent event={playerObj.event} playContainer={playerObj.playContainer}>

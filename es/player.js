@@ -3162,6 +3162,7 @@ Player.prototype.requestStream = function (url) {
 };
 
 function SinglePlayer({
+  showLoading,
   type,
   file,
   h265lib,
@@ -3284,7 +3285,8 @@ function SinglePlayer({
     leftMidExtContents: props.leftMidExtContents,
     rightExtContents: props.rightExtContents,
     rightMidExtContents: props.rightMidExtContents,
-    draggable: props.draggable
+    draggable: props.draggable,
+    showLoading: showLoading
   }), children) : React.createElement("div", {
     className: "h265-bar"
   }, React.createElement("canvas", {
@@ -3322,13 +3324,14 @@ function VideoTools({
   leftMidExtContents,
   rightExtContents,
   rightMidExtContents,
-  errorReloadTimer
+  errorReloadTimer,
+  showLoading
 }) {
   if (!playerObj) {
     return React.createElement(NoSource, null);
   }
 
-  return React.createElement(React.Fragment, null, React.createElement(VideoMessage, {
+  return React.createElement(React.Fragment, null, showLoading && React.createElement(VideoMessage, {
     api: playerObj.api,
     event: playerObj.event
   }), draggable && React.createElement(DragEvent, {
@@ -3599,6 +3602,7 @@ const computedTimeAndIndex = (historyList, currentTime) => {
 };
 
 function HistoryPlayer({
+  showLoading,
   type,
   historyList,
   defaultTime,
@@ -3744,7 +3748,8 @@ function HistoryPlayer({
     reloadHistory: reloadHistory,
     historyList: historyList,
     playIndex: playIndex,
-    seekTo: seekTo
+    seekTo: seekTo,
+    showLoading: showLoading
   }), children);
 }
 
@@ -3764,13 +3769,14 @@ function VideoTools$1({
   reloadHistory,
   historyList,
   seekTo,
-  playIndex
+  playIndex,
+  showLoading
 }) {
   if (!playerObj) {
     return React.createElement(NoSource, null);
   }
 
-  return React.createElement(React.Fragment, null, React.createElement(VideoMessage, {
+  return React.createElement(React.Fragment, null, showLoading && React.createElement(VideoMessage, {
     api: playerObj.api,
     event: playerObj.event
   }), draggable && React.createElement(DragEvent, {

@@ -14,7 +14,7 @@ import PropTypes from 'prop-types'
 import './style/index.less'
 import Players from './h265/player'
 
-function SinglePlayer({ type, file, h265lib, className, autoPlay, muted, poster, playsinline, loop, preload, children, onInitPlayer, ...props }) {
+function SinglePlayer({showLoading, type, file, h265lib, className, autoPlay, muted, poster, playsinline, loop, preload, children, onInitPlayer, ...props }) {
   const playContainerRef = useRef(null)
   const [playerObj, setPlayerObj] = useState(null);
   const [canvsShow, setcanvsShow] = useState(false);
@@ -121,6 +121,7 @@ function SinglePlayer({ type, file, h265lib, className, autoPlay, muted, poster,
             rightExtContents={props.rightExtContents}
             rightMidExtContents={props.rightMidExtContents}
             draggable={props.draggable}
+            showLoading={showLoading}
           />
           {children}
         </div> :
@@ -155,14 +156,15 @@ function VideoTools({
   leftMidExtContents,
   rightExtContents,
   rightMidExtContents,
-  errorReloadTimer
+  errorReloadTimer,
+  showLoading
 }) {
   if (!playerObj) {
     return <NoSource />
   }
   return (
     <>
-      <VideoMessage api={playerObj.api} event={playerObj.event} />
+      {showLoading && <VideoMessage api={playerObj.api} event={playerObj.event} />} 
       {draggable && <DragEvent playContainer={playerObj.playContainer} api={playerObj.api} event={playerObj.event} />}
       {true && (
         <ContrallerEvent event={playerObj.event} playContainer={playerObj.playContainer}>
